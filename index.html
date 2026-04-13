@@ -228,7 +228,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <span style="margin-left:auto;font-size:10px">點旗幟換幣 ↑</span>
             </div>
             <div class="fx-out" id="fx-bot">4,566</div>
-            <div class="fx-rate"><span id="fx-rt">1 TWD = 4.566 JPY</span><span style="font-size:10px;color:var(--acc)">點格子快速換算</span></div>
+            <div class="fx-rate"><span id="fx-rt">1 TWD = 4.566 JPY</span><span id="fx-rate-time" style="font-size:10px;color:var(--acc)">載入即時匯率中...</span></div>
           </div>
         </div>
         <div class="qg" id="fx-quick"></div>
@@ -239,7 +239,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-size:12px;font-weight:600;color:var(--tx2)">旅遊預算</span><span style="font-size:12px;color:var(--tx2)"><b id="bdg-spent">NT$0</b> / <span id="bdg-total">NT$60,000</span></span></div>
         <div class="bb-wrap"><div class="bb-fill" id="bdg-bar" style="width:0%"></div></div>
         <div style="font-size:11px;color:var(--tx3);margin-bottom:7px" id="bdg-rem">剩餘 NT$60,000</div>
-        <div style="display:flex;gap:6px"><button class="bg_" style="flex:1;font-size:12px" onclick="editBudget()">✏️ 修改</button><button class="bg_" style="flex:1;font-size:12px" onclick="addBudget()">＋ 追加</button></div>
+        <div style="display:flex;gap:6px"><button class="bg_" style="flex:1;font-size:12px" onclick="showBudgetModal('edit')">✏️ 修改</button><button class="bg_" style="flex:1;font-size:12px" onclick="showBudgetModal('add')">＋ 追加</button></div>
+        <div id="budget-modal" style="display:none;background:var(--bg2);border-radius:var(--rs);border:1px solid var(--bd);padding:12px;margin-top:8px">
+          <div class="fl" id="budget-modal-lbl" style="margin-bottom:6px;font-size:12px;font-weight:700"></div>
+          <div style="display:flex;gap:7px;align-items:center">
+            <input class="fi" id="budget-input" type="number" inputmode="numeric" placeholder="輸入金額" style="flex:1">
+            <button class="bp" style="padding:9px 14px;font-size:13px" onclick="confirmBudget()">確認</button>
+            <button class="bg_" style="padding:8px 12px;font-size:13px" onclick="document.getElementById('budget-modal').style.display='none'">取消</button>
+          </div>
+        </div>
       </div>
       <div class="exp-sum"><div class="exp-s"><div class="exp-sl">總花費（台幣）</div><div class="exp-sv" id="exp-tot">NT$0</div></div><div class="exp-s"><div class="exp-sl">筆數</div><div class="exp-sv" id="exp-cnt">0 筆</div></div></div>
       <!-- Camera -->
@@ -262,29 +270,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="exp-form">
         <div style="font-size:12px;font-weight:700;margin-bottom:9px;color:var(--tx2)">手動輸入</div>
         <div class="fr"><label class="fl">店名 / 項目</label><input class="fi" id="e-nm" placeholder="例：一蘭拉麵"></div>
-        <div class="fh"><div><label class="fl">金額</label><input class="fi" id="e-am" type="number" placeholder="0" inputmode="decimal"></div><div><label class="fl">貨幣</label><select class="fi" id="e-cu"><option value="JPY">JPY 日圓</option><option value="TWD" selected>TWD 台幣</option><option value="KRW">KRW 韓圜</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div></div>
+        <div class="fh"><div><label class="fl">金額</label><input class="fi" id="e-am" type="number" placeholder="0" inputmode="decimal"></div><div><label class="fl">貨幣</label><select class="fi" id="e-cu" onchange="saveLastCurrency(this.value)"><option value="JPY">JPY 日圓</option><option value="TWD">TWD 台幣</option><option value="KRW">KRW 韓圜</option><option value="USD">USD 美金</option><option value="EUR">EUR 歐元</option><option value="THB">THB 泰銖</option><option value="HKD">HKD 港幣</option><option value="SGD">SGD 新幣</option><option value="MYR">MYR 馬幣</option><option value="VND">VND 越盾</option><option value="GBP">GBP 英鎊</option><option value="AUD">AUD 澳幣</option><option value="CAD">CAD 加幣</option><option value="CHF">CHF 瑞郎</option><option value="CNY">CNY 人民幣</option><option value="IDR">IDR 印尼盾</option><option value="PHP">PHP 菲幣</option></select></div></div>
         <button class="bp" style="width:100%" onclick="addExp()">儲存消費</button>
       </div>
       <div class="slbl">消費紀錄</div>
       <div id="exp-list"><div class="empty">還沒有記錄</div></div>
-      <!-- Split -->
-      <div style="margin-top:4px">
-        <div class="slbl">分帳 / 退稅計算</div>
-        <div style="background:var(--bg2);border-radius:var(--rs);padding:11px;margin-bottom:10px;border:1px solid var(--bd)">
-          <div class="f3"><div><label class="fl">人數</label><input class="fi" id="sp-ppl" type="number" value="4" min="1" oninput="previewSplit()"></div><div><label class="fl">稅率 %</label><input class="fi" id="sp-tax" type="number" value="10" oninput="previewSplit()"></div><div><label class="fl">免稅門檻</label><input class="fi" id="sp-min" type="number" value="5000" oninput="previewSplit()"></div></div>
-          <div class="fr"><label class="fl">項目名稱</label><input class="fi" id="sp-nm" placeholder="例：藥妝店"></div>
-          <div class="fr"><label class="fl">金額（¥）</label><input class="fi" id="sp-am" type="number" placeholder="5000" oninput="previewSplit()"></div>
-          <div id="sp-preview"></div>
-          <button class="bp" style="width:100%;margin-top:8px" onclick="addSplit()">＋ 加入清單</button>
+
+    </div>
+    <!-- SPLIT -->
+    <div class="view" id="view-split">
+      <div style="background:var(--bg2);border-radius:var(--rs);padding:12px;margin-bottom:10px;border:1px solid var(--bd)">
+        <div class="f3"><div><label class="fl">人數</label><input class="fi" id="sp-ppl" type="number" value="4" min="1" oninput="previewSplit()"></div><div><label class="fl">稅率 %</label><input class="fi" id="sp-tax" type="number" value="10" oninput="previewSplit()"></div><div><label class="fl">免稅門檻</label><input class="fi" id="sp-min" type="number" value="5000" oninput="previewSplit()"></div></div>
+        <div class="fh"><div><label class="fl">項目名稱</label><input class="fi" id="sp-nm" placeholder="例：藥妝店"></div><div><label class="fl">貨幣</label><select class="fi" id="sp-cu"><option value="JPY">JPY 日圓</option><option value="TWD">TWD 台幣</option><option value="KRW">KRW 韓圜</option><option value="USD">USD 美金</option><option value="THB">THB 泰銖</option></select></div></div>
+        <div class="fr"><label class="fl">金額</label><input class="fi" id="sp-am" type="number" placeholder="5000" oninput="previewSplit()"></div>
+        <div id="sp-preview"></div>
+        <button class="bp" style="width:100%;margin-top:8px" onclick="addSplit()">＋ 加入清單</button>
+      </div>
+      <div class="slbl">分帳清單</div>
+      <div id="split-list"><div class="empty" style="padding:12px">還沒有加入項目</div></div>
+      <div id="split-total" style="display:none">
+        <div style="background:var(--bg2);border-radius:var(--rs);padding:12px;border:1px solid var(--bd)">
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--bd)"><span style="color:var(--tx2)">總金額</span><span id="sp-to" style="font-weight:700"></span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--bd)"><span style="color:var(--tx2)">退稅</span><span id="sp-tr" style="font-weight:700;color:var(--gd)"></span></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;padding:8px 0 4px"><span style="font-weight:700">每人分攤</span><span id="sp-tp" style="font-weight:700;color:var(--acc);font-size:18px"></span></div>
+          <div style="font-size:11px;color:var(--tx3)" id="sp-tw"></div>
         </div>
-        <div id="split-list"><div class="empty" style="padding:12px">還沒有加入項目</div></div>
-        <div id="split-total" style="display:none"><div style="background:var(--bg2);border-radius:var(--rs);padding:11px;border:1px solid var(--bd)"><div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-bottom:1px solid var(--bd)"><span style="color:var(--tx2)">總金額</span><span id="sp-to" style="font-weight:700">¥0</span></div><div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-bottom:1px solid var(--bd)"><span style="color:var(--tx2)">退稅</span><span id="sp-tr" style="font-weight:700;color:var(--gd)">¥0</span></div><div style="display:flex;justify-content:space-between;font-size:15px;padding:7px 0 3px"><span style="font-weight:700">每人</span><span id="sp-tp" style="font-weight:700;color:var(--acc);font-size:17px">¥0</span></div><div style="font-size:11px;color:var(--tx3)" id="sp-tw"></div></div></div>
       </div>
     </div>
     <!-- SETTINGS -->
     <div class="view" id="view-settings">
       <!-- Share -->
-      <div class="set-section open" id="ss-share">
+      <div class="set-section" id="ss-share">
         <div class="set-hd" onclick="toggleSet('share')"><span class="set-hd-title">🔗 分享行程</span><span class="set-arrow">›</span></div>
         <div class="set-body">
           <div style="font-size:12px;color:var(--tx2);line-height:1.7;margin-bottom:10px">點擊產生分享連結，旅伴開啟後會有完整行程資料。任何人修改後可重新分享更新的連結。<br>原理：所有資料都編碼在網址中，<b>完全不需要帳號或後端服務</b>。</div>
@@ -300,7 +316,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
       <!-- Timezone -->
-      <div class="set-section open" id="ss-tz">
+      <div class="set-section" id="ss-tz">
         <div class="set-hd" onclick="toggleSet('tz')"><span class="set-hd-title">🌍 時區 &amp; 目的地</span><span class="set-arrow">›</span></div>
         <div class="set-body">
           <div class="cs-slots">
@@ -396,6 +412,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 const THEMES=[{id:'white',bg:'#fff',bg2:'#f7f7f5',bg3:'#efefec',sw:'#e8e8e4'},{id:'blue',bg:'#fff',bg2:'#eef4ff',bg3:'#e4ecfa',sw:'#bfd4f7'},{id:'green',bg:'#fff',bg2:'#edfcf4',bg3:'#e0f7ee',sw:'#b3ecd4'},{id:'warm',bg:'#fff',bg2:'#fdf8f0',bg3:'#f5ede0',sw:'#f0d9b8'},{id:'purple',bg:'#fff',bg2:'#f4f0fd',bg3:'#ebe5fa',sw:'#c9b8f0'},{id:'dark',bg:'#1c1c1e',bg2:'#2c2c2e',bg3:'#111113',sw:'#3a3a3c',tx:'#f2f2f7',tx2:'#aeaeb2',tx3:'#636366',bd:'#3a3a3c',bd2:'#48484a'}];
 const ALL_COUNTRIES=[{name:'台灣',flag:'🇹🇼',currency:'TWD',tz:8},{name:'日本',flag:'🇯🇵',currency:'JPY',tz:9},{name:'韓國',flag:'🇰🇷',currency:'KRW',tz:9},{name:'泰國',flag:'🇹🇭',currency:'THB',tz:7},{name:'越南',flag:'🇻🇳',currency:'VND',tz:7},{name:'馬來西亞',flag:'🇲🇾',currency:'MYR',tz:8},{name:'新加坡',flag:'🇸🇬',currency:'SGD',tz:8},{name:'菲律賓',flag:'🇵🇭',currency:'PHP',tz:8},{name:'印尼',flag:'🇮🇩',currency:'IDR',tz:7},{name:'香港',flag:'🇭🇰',currency:'HKD',tz:8},{name:'中國',flag:'🇨🇳',currency:'CNY',tz:8},{name:'印度',flag:'🇮🇳',currency:'INR',tz:5.5},{name:'美國',flag:'🇺🇸',currency:'USD',tz:-5},{name:'加拿大',flag:'🇨🇦',currency:'CAD',tz:-5},{name:'英國',flag:'🇬🇧',currency:'GBP',tz:0},{name:'法國',flag:'🇫🇷',currency:'EUR',tz:1},{name:'德國',flag:'🇩🇪',currency:'EUR',tz:1},{name:'義大利',flag:'🇮🇹',currency:'EUR',tz:1},{name:'西班牙',flag:'🇪🇸',currency:'EUR',tz:1},{name:'荷蘭',flag:'🇳🇱',currency:'EUR',tz:1},{name:'瑞士',flag:'🇨🇭',currency:'CHF',tz:1},{name:'澳洲',flag:'🇦🇺',currency:'AUD',tz:10},{name:'紐西蘭',flag:'🇳🇿',currency:'NZD',tz:12},{name:'土耳其',flag:'🇹🇷',currency:'TRY',tz:3},{name:'阿聯',flag:'🇦🇪',currency:'AED',tz:4},{name:'以色列',flag:'🇮🇱',currency:'ILS',tz:2},{name:'埃及',flag:'🇪🇬',currency:'EGP',tz:2},{name:'摩洛哥',flag:'🇲🇦',currency:'MAD',tz:1},{name:'南非',flag:'🇿🇦',currency:'ZAR',tz:2},{name:'巴西',flag:'🇧🇷',currency:'BRL',tz:-3},{name:'墨西哥',flag:'🇲🇽',currency:'MXN',tz:-6},{name:'挪威',flag:'🇳🇴',currency:'NOK',tz:1},{name:'瑞典',flag:'🇸🇪',currency:'SEK',tz:1},{name:'丹麥',flag:'🇩🇰',currency:'DKK',tz:1},{name:'芬蘭',flag:'🇫🇮',currency:'EUR',tz:2},{name:'葡萄牙',flag:'🇵🇹',currency:'EUR',tz:0},{name:'希臘',flag:'🇬🇷',currency:'EUR',tz:2},{name:'捷克',flag:'🇨🇿',currency:'CZK',tz:1},{name:'匈牙利',flag:'🇭🇺',currency:'HUF',tz:1},{name:'波蘭',flag:'🇵🇱',currency:'PLN',tz:1},{name:'冰島',flag:'🇮🇸',currency:'ISK',tz:0},{name:'柬埔寨',flag:'🇰🇭',currency:'KHR',tz:7},{name:'緬甸',flag:'🇲🇲',currency:'MMK',tz:6.5},{name:'斯里蘭卡',flag:'🇱🇰',currency:'LKR',tz:5.5},{name:'尼泊爾',flag:'🇳🇵',currency:'NPR',tz:5.75},{name:'孟加拉',flag:'🇧🇩',currency:'BDT',tz:6},{name:'巴基斯坦',flag:'🇵🇰',currency:'PKR',tz:5},{name:'阿根廷',flag:'🇦🇷',currency:'ARS',tz:-3},{name:'秘魯',flag:'🇵🇪',currency:'PEN',tz:-5},{name:'克羅埃西亞',flag:'🇭🇷',currency:'EUR',tz:1},{name:'奧地利',flag:'🇦🇹',currency:'EUR',tz:1},{name:'比利時',flag:'🇧🇪',currency:'EUR',tz:1}];
 const RATES={TWD:1,JPY:4.566,KRW:40.2,USD:0.031,EUR:0.029,THB:1.12,HKD:0.244,GBP:0.025,AUD:0.048,SGD:0.042,VND:760,MYR:0.143,IDR:490,PHP:1.72,INR:2.58,CAD:0.043,CNY:0.22,CHF:0.028,NZD:0.054,AED:0.114,TRY:1.02,NOK:0.32,SEK:0.30,DKK:0.21,ILS:0.117,CZK:0.72,HUF:10.8,PLN:0.13,ZAR:0.57,BRL:0.16,MXN:0.53,ISK:4.1,EGP:1.52,MAD:0.31,MMK:0.015,KHR:7.9,LKR:0.10,NPR:0.23,BDT:0.029,PKR:0.011,ARS:0.036,PEN:0.082};
+// Fetch live rates (base: USD from open.er-api.com - free, no key needed)
+async function fetchLiveRates(){
+  try{
+    const cached=localStorage.getItem('fx_rates');
+    const cacheTime=parseInt(localStorage.getItem('fx_rates_time')||'0');
+    const now=Date.now();
+    // Use cache if less than 1 hour old
+    if(cached&&(now-cacheTime)<3600000){
+      const data=JSON.parse(cached);applyRates(data);
+      document.getElementById('fx-rate-time')&&(document.getElementById('fx-rate-time').textContent='匯率：'+new Date(cacheTime).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})+' 更新');
+      return;
+    }
+    const resp=await fetch('https://open.er-api.com/v6/latest/USD');
+    if(!resp.ok)return;
+    const json=await resp.json();
+    if(json.result!=='success')return;
+    const usdRates=json.rates; // all vs USD
+    // Convert to TWD base: rate_TWD_per_X = (1/usdRates[X]) * usdRates['TWD']
+    const twdPerUsd=usdRates['TWD'];
+    Object.keys(usdRates).forEach(code=>{
+      if(usdRates[code]>0)RATES[code]=twdPerUsd/usdRates[code];
+    });
+    localStorage.setItem('fx_rates',JSON.stringify(usdRates));
+    localStorage.setItem('fx_rates_time',String(now));
+    const timeStr=new Date(now).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('fx-rate-time')&&(document.getElementById('fx-rate-time').textContent='即時匯率：'+timeStr+' 更新');
+    if(typeof updateFx==='function'&&document.getElementById('fx-top'))updateFx();
+  }catch(e){console.log('Rate fetch failed, using defaults',e);}
+}
+function applyRates(usdRates){
+  const twdPerUsd=usdRates['TWD'];
+  if(!twdPerUsd)return;
+  Object.keys(usdRates).forEach(code=>{if(usdRates[code]>0)RATES[code]=twdPerUsd/usdRates[code];});
+}
 const QUICK_CURRS=['JPY','KRW','USD','EUR','THB','HKD','GBP','SGD','AUD'];
 const EMOJIS=['🚇','✈️','🚌','🚆','🚗','🚕','🛵','🚢','🚁','🛺','🏨','🏩','🏠','🏡','🏕️','⛺','🛖','🏰','🍜','🍣','🍱','🍛','🍔','🍕','🥗','🍩','☕','🍺','🍷','🥘','🍝','🌮','🛍️','🛒','👗','👠','💄','💍','📱','🎁','🧴','👒','🗺️','🏯','⛩️','🗼','🏔️','🌊','🌸','🎡','🏛️','🎭','🎪','🌅','🌃','🎠','📌','⭐','❤️','💫','🔖','🎯','💎','🌟','♨️','🎑','🌺','🏖️','🍦','🎎','🎋','🎍'];
 const WD='日一二三四五六';
@@ -491,6 +541,11 @@ function navTo(v,el){
   el.classList.add('on');
   showView(v);
 }
+function enterSplit(){
+  showView('split');
+  document.querySelectorAll('.nb').forEach(n=>n.classList.remove('on'));
+  document.getElementById('nb-expense').classList.add('on');
+}
 function enterTrip(idx){
   currentTripIdx=idx;
   showView('trip');
@@ -504,6 +559,10 @@ function goBack(){
     showView('home');buildTripList();
     document.querySelectorAll('.nb').forEach(n=>n.classList.remove('on'));
     document.getElementById('nb-home').classList.add('on');
+  } else if(currentView==='split'){
+    showView('expense');
+    document.querySelectorAll('.nb').forEach(n=>n.classList.remove('on'));
+    document.getElementById('nb-expense').classList.add('on');
   }
 }
 function updateTopBar(){
@@ -522,10 +581,12 @@ function updateTopBar(){
     const pend=trip.days.flatMap(d=>d.items).filter(it=>it.res&&!it.res.done).length;
     const done=trip.days.flatMap(d=>d.items).filter(it=>it.res&&it.res.done).length;
     const total=pend+done;
-    right.innerHTML=`<button class="tb-btn" onclick="openResSheet()">${total?`📋 ${done}/${total} 訂位`:'📋 訂位'}</button>`;
+    right.innerHTML=`<button class="tb-btn" onclick="openResSheet()">📋 訂位確認</button>`;
   }else if(currentView==='expense'){
     title.textContent='記帳';
-    right.innerHTML=`<button class="tb-btn${fxVisible?' on':''}" onclick="toggleFx()">💱 匯率</button>`;
+    right.innerHTML=`<button class="tb-btn${fxVisible?' on':''}" onclick="toggleFx()" style="margin-right:4px">💱 匯率</button><button class="tb-btn" onclick="enterSplit()">🧮 分帳</button>`;
+  }else if(currentView==='split'){
+    back.style.display='';title.textContent='分帳 / 退稅計算';
   }else if(currentView==='settings'){
     title.textContent='設定';
   }
@@ -569,9 +630,8 @@ function buildTripList(){
       <div class="trip-flag">${t.flag}</div>
       <div class="trip-info">
         <div class="trip-name">${t.name.replace(/^[^\s]+\s/,'')}</div>
-        <div class="trip-dates">${t.subtitle}</div>
-        ${total?`<div class="trip-res-row">${pips}<span>訂位 ${done}/${total} 已完成</span></div>`:''}
-        <div style="font-size:11px;color:var(--acc);margin-top:4px;font-weight:600">${diffLabel}</div>
+        <div style="font-size:11px;color:var(--acc);font-weight:600;margin-top:6px">${diffLabel}</div>
+        <div class="trip-dates" style="margin-top:3px">${t.subtitle}</div>
       </div>
       <span style="color:var(--tx3);font-size:18px">›</span>
     </div>`;
@@ -638,7 +698,7 @@ function buildTripView(){
   document.getElementById('days-wrap').innerHTML=trip.days.map((d,di)=>{
     const pend=d.items.filter(it=>it.res&&!it.res.done).length;
     const badge=pend?`<span style="background:var(--rbg);color:var(--rtx);font-size:10px;padding:1px 6px;border-radius:20px;font-weight:700;margin-left:4px">${pend}待訂</span>`:'';
-    const isOpen=di===0||openSet.has(String(di));
+    const isOpen=openSet.has(String(di));
     return`<div class="day-card${isOpen?' open':''}" id="dc-${di}" data-di="${di}">
       <div class="day-hd">
         <span class="drag-handle">≡</span>
@@ -744,7 +804,7 @@ function initSortable(){
 // ── Edit form ──
 function catSelHTML(sel,pfx){const cats=getAllCats();const keys=Object.keys(cats);const cols=Math.min(keys.length,4);return`<div class="cat-sel" id="cs-${pfx}" style="grid-template-columns:repeat(${cols},1fr)">${keys.map(k=>`<div class="co${k===sel?' on':''}" onclick="pickCat(this,'${k}','${pfx}')"><span class="co-ic">${cats[k].icon}</span><span style="font-size:9px">${cats[k].lbl}</span></div>`).join('')}</div>`;}
 function pickCat(el,cat,pfx){document.querySelectorAll(`#cs-${pfx} .co`).forEach(e=>e.classList.remove('on'));el.classList.add('on');const h=document.getElementById('hcat-'+pfx);if(h)h.value=cat;else newCat=cat;}
-function itemFormHTML(it,pfx){return`<input type="hidden" id="hcat-${pfx}" value="${it.cat||'food'}">${catSelHTML(it.cat||'food',pfx)}<div class="fh"><div><label class="fl">名稱</label><input class="fi" id="en-${pfx}" value="${it.name||''}"></div><div><label class="fl">時間</label><input class="fi" id="et-${pfx}" type="time" value="${it.time||''}"></div></div><div class="fh"><div><label class="fl">預計停留</label><input class="fi" id="ed-${pfx}" value="${it.dur||''}" placeholder="1小時"></div><div><label class="fl">營業時間</label><input class="fi" id="eh-${pfx}" value="${it.hours||''}" placeholder="10:00-21:00"></div></div><div class="fr"><label class="fl">備註</label><input class="fi" id="eo-${pfx}" value="${it.note||''}"></div><div class="fr"><label class="fl">地址</label><input class="fi" id="ea-${pfx}" value="${it.addr||''}" placeholder="例：東京都台東区浅草2-3-1"></div><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px"><input type="checkbox" id="er-${pfx}" ${it.res?'checked':''} style="width:15px;height:15px;accent-color:var(--acc)"><label for="er-${pfx}" style="font-size:12px;color:var(--tx2);cursor:pointer">需要訂位</label></div>`;}
+function itemFormHTML(it,pfx){return`<input type="hidden" id="hcat-${pfx}" value="${it.cat||'food'}">${catSelHTML(it.cat||'food',pfx)}<div class="fr"><label class="fl">名稱</label><input class="fi" id="en-${pfx}" value="${it.name||''}" placeholder="例：淺草寺"></div><div class="fr"><label class="fl">時間</label><input class="fi" id="et-${pfx}" type="time" value="${it.time||''}" style="max-width:100%;font-size:16px"></div><div class="fh"><div><label class="fl">預計停留</label><input class="fi" id="ed-${pfx}" value="${it.dur||''}" placeholder="1小時"></div><div><label class="fl">營業時間</label><input class="fi" id="eh-${pfx}" value="${it.hours||''}" placeholder="10:00-21:00"></div></div><div class="fr"><label class="fl">備註</label><input class="fi" id="eo-${pfx}" value="${it.note||''}"></div><div class="fr"><label class="fl">地址</label><input class="fi" id="ea-${pfx}" value="${it.addr||''}" placeholder="例：東京都台東区浅草2-3-1"></div><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px"><input type="checkbox" id="er-${pfx}" ${it.res?'checked':''} style="width:15px;height:15px;accent-color:var(--acc)"><label for="er-${pfx}" style="font-size:12px;color:var(--tx2);cursor:pointer">需要訂位</label></div>`;}
 function readForm(pfx){return{cat:document.getElementById('hcat-'+pfx).value,name:document.getElementById('en-'+pfx).value.trim(),time:document.getElementById('et-'+pfx).value,dur:document.getElementById('ed-'+pfx).value,hours:document.getElementById('eh-'+pfx).value,note:document.getElementById('eo-'+pfx).value,addr:document.getElementById('ea-'+pfx).value,needRes:document.getElementById('er-'+pfx).checked};}
 function startEdit(di,ii){
   const eId=`ef-${di}-${ii}`;if(document.getElementById(eId).style.display!=='none'){document.getElementById(eId).style.display='none';return;}
@@ -801,9 +861,9 @@ function openResSheet(){
       ${it.res.bookTime?`<div style="background:var(--gl);border-radius:var(--rs);padding:7px 10px;margin-top:8px;font-size:12px;color:var(--gd);font-weight:600">🕐 台灣訂位時間：${it.res.bookTime}</div>`:''}
       <div style="font-size:11px;color:var(--tx2);margin-top:6px;line-height:1.6">📅 提醒日：<b>${fmt(rd)}</b>${adv>0?` (往前推${adv}天)`:''}</div>
       ${it.res.url?`<div style="margin-top:6px"><button class="bg_" style="font-size:12px;padding:6px 12px" onclick="window.open('${it.res.url}','_blank')">開啟訂位網站 →</button></div>`:''}
-      <div style="display:flex;gap:7px;margin-top:8px">
-        <button class="done-btn${it.res.done?' done':''}" id="db-${key}" onclick="toggleResItem('${key}')">${it.res.done?'✅ 已完成訂位（點擊取消）':'⬜ 標記為已完成訂位'}</button>
-        <button class="bg_" style="padding:7px 10px;font-size:12px" onclick="editResItem('${key}')">✏️ 編輯</button>
+      <div style="display:flex;gap:7px;margin-top:8px;align-items:stretch">
+        <button class="done-btn${it.res.done?' done':''}" id="db-${key}" onclick="toggleResItem('${key}')" style="flex:1">${it.res.done?'✅ 已完成訂位（點擊取消）':'⬜ 標記為已完成訂位'}</button>
+        <button class="bg_" style="padding:0 14px;font-size:13px;flex-shrink:0;display:flex;align-items:center" onclick="editResItem('${key}')">✏️</button>
       </div>
       <div id="re-${key}" style="display:none;background:var(--bg2);border-radius:var(--rs);padding:10px;margin-top:8px;border:1px solid var(--bd)">
         <div class="fr"><label class="fl">台灣訂位時間</label><input class="fi" id="rbt-${key}" value="${it.res.bookTime||''}" placeholder="PM 6:15（日本 PM 7:15）"></div>
@@ -891,8 +951,33 @@ function updateBudget(){
   document.getElementById('bdg-rem').textContent=spent<=budget?`剩餘 NT$${(budget-Math.round(spent)).toLocaleString()}`:`⚠️ 超出 NT$${(Math.round(spent)-budget).toLocaleString()}`;
   const bar=document.getElementById('bdg-bar');bar.style.width=pct+'%';bar.classList.toggle('warn',pct>=90);
 }
-function editBudget(){const v=prompt('請輸入新預算（台幣）',budget);if(v&&!isNaN(parseInt(v))){budget=parseInt(v);updateBudget();autoSave();}}
-function addBudget(){const v=prompt('請輸入追加金額（台幣）','');if(v&&!isNaN(parseInt(v))){budget+=parseInt(v);updateBudget();autoSave();}}
+let _budgetMode='edit';
+function showBudgetModal(mode){
+  _budgetMode=mode;
+  const lbl=document.getElementById('budget-modal-lbl');
+  const inp=document.getElementById('budget-input');
+  const modal=document.getElementById('budget-modal');
+  lbl.textContent=mode==='edit'?'設定新預算（台幣）':'追加預算金額（台幣）';
+  inp.value=mode==='edit'?budget:'';
+  modal.style.display='block';
+  inp.focus();inp.select();
+}
+function confirmBudget(){
+  const v=parseInt(document.getElementById('budget-input').value)||0;
+  if(!v){alert('請輸入有效金額');return;}
+  if(_budgetMode==='edit')budget=v;else budget+=v;
+  updateBudget();autoSave();
+  document.getElementById('budget-modal').style.display='none';
+}
+function editBudget(){showBudgetModal('edit');}
+function addBudget(){showBudgetModal('add');}
+function saveLastCurrency(v){localStorage.setItem('last_currency',v);}
+function restoreLastCurrency(){
+  const last=localStorage.getItem('last_currency');
+  if(!last)return;
+  const sel=document.getElementById('e-cu');
+  if(sel){Array.from(sel.options).forEach(o=>o.selected=o.value===last);}
+}
 function addExp(){
   const nm=document.getElementById('e-nm').value.trim();const am=parseFloat(document.getElementById('e-am').value)||0;const cu=document.getElementById('e-cu').value;
   if(!nm||!am){alert('請填入名稱和金額');return;}
@@ -945,24 +1030,63 @@ function calcTax(orig,tr,ma){tr=parseFloat(tr)||10;ma=parseFloat(ma)||5500;if(or
 function previewSplit(){
   const am=parseFloat(document.getElementById('sp-am').value)||0;if(!am){document.getElementById('sp-preview').innerHTML='';return;}
   const tr=document.getElementById('sp-tax').value;const ma=document.getElementById('sp-min').value;const ppl=parseInt(document.getElementById('sp-ppl').value)||4;
+  const cu=document.getElementById('sp-cu')?.value||'JPY';
   const{eligible,refund,net}=calcTax(am,tr,ma);const pp=Math.round(net/ppl);
-  if(!eligible){document.getElementById('sp-preview').innerHTML=`<div style="background:var(--abg);border-radius:var(--rs);padding:9px;margin-top:7px;font-size:12px;color:var(--atx);font-weight:600">⚠️ 未達免稅門檻，不退稅<br>每人：¥${Math.round(am/ppl).toLocaleString()} ≈ NT$${Math.round(am/ppl/RATES['JPY']).toLocaleString()}</div>`;}
-  else{document.getElementById('sp-preview').innerHTML=`<div style="background:var(--gl);border-radius:var(--rs);padding:10px;margin-top:7px"><div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span style="color:var(--gd)">退稅</span><span style="font-weight:700;color:var(--gd)">−¥${refund.toLocaleString()}</span></div><div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0 3px;border-top:1px solid rgba(0,0,0,.1);margin-top:3px"><span style="font-weight:700">每人（${ppl}人）</span><span style="font-weight:700;color:var(--gd);font-size:16px">¥${pp.toLocaleString()}</span></div><div style="font-size:11px;color:var(--gd);text-align:right">≈ NT$${Math.round(pp/RATES['JPY']).toLocaleString()}</div></div>`;}
+  const ppTwd=RATES[cu]?Math.round(pp/RATES[cu]*RATES['TWD']):pp;
+  if(!eligible){document.getElementById('sp-preview').innerHTML=`<div style="background:var(--abg);border-radius:var(--rs);padding:9px;margin-top:7px;font-size:12px;color:var(--atx);font-weight:600">⚠️ 未達免稅門檻，不退稅<br>每人：${cu} ${Math.round(am/ppl).toLocaleString()} ≈ NT$${Math.round(am/ppl/(RATES[cu]||1)*RATES['TWD']).toLocaleString()}</div>`;}
+  else{document.getElementById('sp-preview').innerHTML=`<div style="background:var(--gl);border-radius:var(--rs);padding:10px;margin-top:7px"><div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span style="color:var(--gd)">退稅</span><span style="font-weight:700;color:var(--gd)">−${cu} ${refund.toLocaleString()}</span></div><div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0 3px;border-top:1px solid rgba(0,0,0,.1);margin-top:3px"><span style="font-weight:700">每人（${ppl}人）</span><span style="font-weight:700;color:var(--gd);font-size:16px">${cu} ${pp.toLocaleString()}</span></div><div style="font-size:11px;color:var(--gd);text-align:right">≈ NT$${ppTwd.toLocaleString()}</div></div>`;}
 }
 function addSplit(){
   const nm=document.getElementById('sp-nm').value.trim();const am=parseFloat(document.getElementById('sp-am').value)||0;if(!nm||!am){alert('請填入名稱和金額');return;}
+  const cu=document.getElementById('sp-cu')?.value||'JPY';
   const{eligible,refund,net}=calcTax(am,document.getElementById('sp-tax').value,document.getElementById('sp-min').value);
-  splitItems.push({id:'sp'+Date.now(),nm,am,refund,net,eligible});
+  splitItems.push({id:'sp'+Date.now(),nm,am,cu,refund,net,eligible});
   document.getElementById('sp-nm').value='';document.getElementById('sp-am').value='';document.getElementById('sp-preview').innerHTML='';renderSplit();
 }
 function delSplit(id){splitItems=splitItems.filter(s=>s.id!==id);renderSplit();}
 function renderSplit(){
   const ppl=parseInt(document.getElementById('sp-ppl').value)||4;const list=document.getElementById('split-list');
-  if(!splitItems.length){list.innerHTML='<div class="empty" style="padding:12px">還沒有加入項目</div>';document.getElementById('split-total').style.display='none';return;}
-  list.innerHTML=splitItems.map(s=>`<div style="display:flex;align-items:center;padding:8px 10px;background:var(--bg2);border-radius:var(--rs);margin-bottom:5px;border:1px solid var(--bd);gap:8px"><div style="flex:1"><div style="font-size:13px;font-weight:600">${s.nm}</div><div style="font-size:11px;color:var(--tx2);margin-top:1px">¥${s.am.toLocaleString()} ${s.eligible?`<span style="color:var(--gd)">退稅¥${s.refund.toLocaleString()}</span> → ¥${s.net.toLocaleString()}`:'<span style="color:var(--atx)">不退稅</span>'}</div></div><div style="text-align:right;margin:0 9px"><div style="font-size:10px;color:var(--tx3)">每人</div><div style="font-size:14px;font-weight:700;color:var(--acc)">¥${Math.round(s.net/ppl).toLocaleString()}</div></div><button style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:13px" onclick="delSplit('${s.id}')">✕</button></div>`).join('');
+  if(!splitItems.length){list.innerHTML='<div class="empty" style="padding:12px">還沒有加入項目<br>填上方表單後按＋加入</div>';document.getElementById('split-total').style.display='none';return;}
+  const cu=document.getElementById('sp-cu')?.value||'JPY';
+  list.innerHTML=splitItems.map(s=>{
+    const pp=Math.round(s.net/ppl);
+    const ppTwd=RATES[s.cu||cu]?Math.round(pp/RATES[s.cu||cu]*RATES['TWD']):pp;
+    return`<div style="background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);margin-bottom:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;padding:10px 12px;cursor:pointer;gap:8px" onclick="toggleSplitItem('${s.id}')">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${s.nm}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:1px">${s.cu||cu} ${s.am.toLocaleString()} ${s.eligible?'<span style="color:var(--gd)">可退稅</span>':'<span style="color:var(--atx)">不退稅</span>'}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--tx3)">每人</div>
+          <div style="font-size:15px;font-weight:700;color:var(--acc)">${s.cu||cu} ${pp.toLocaleString()}</div>
+        </div>
+        <span style="color:var(--tx3);font-size:11px" id="sic-${s.id}">▼</span>
+      </div>
+      <div id="sid-${s.id}" style="display:none;padding:10px 12px;border-top:1px solid var(--bd);background:var(--bg2)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+          <div style="background:var(--bg);border-radius:var(--rs);padding:9px;border:1px solid var(--bd);text-align:center"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px">原始金額</div><div style="font-size:14px;font-weight:700">${s.cu||cu} ${s.am.toLocaleString()}</div></div>
+          ${s.eligible?`<div style="background:var(--gl);border-radius:var(--rs);padding:9px;border:1px solid #9ee0c4;text-align:center"><div style="font-size:10px;color:var(--gd);margin-bottom:2px">退稅金額</div><div style="font-size:14px;font-weight:700;color:var(--gd)">-${s.cu||cu} ${s.refund.toLocaleString()}</div></div>`:`<div style="background:var(--abg);border-radius:var(--rs);padding:9px;border:1px solid #f0c060;text-align:center"><div style="font-size:10px;color:var(--atx);margin-bottom:2px">未達門檻</div><div style="font-size:14px;font-weight:700;color:var(--atx)">不退稅</div></div>`}
+          <div style="background:var(--bg);border-radius:var(--rs);padding:9px;border:1px solid var(--bd);text-align:center"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px">實付金額</div><div style="font-size:14px;font-weight:700">${s.cu||cu} ${s.net.toLocaleString()}</div></div>
+          <div style="background:var(--bbg);border-radius:var(--rs);padding:9px;border:1px solid #9ec4f7;text-align:center"><div style="font-size:10px;color:var(--btx);margin-bottom:2px">每人分攤 (${ppl}人)</div><div style="font-size:14px;font-weight:700;color:var(--btx)">${s.cu||cu} ${pp.toLocaleString()}</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--tx3);text-align:center;margin-bottom:8px">≈ NT$ ${ppTwd.toLocaleString()} / 人（參考匯率）</div>
+        <button style="background:none;border:1px solid var(--bd2);border-radius:var(--rs);padding:6px 12px;cursor:pointer;font-family:inherit;font-size:12px;color:var(--rtx);width:100%" onclick="delSplit('${s.id}')">🗑️ 刪除此項</button>
+      </div>
+    </div>`;
+  }).join('');
   const totO=splitItems.reduce((s,e)=>s+e.am,0);const totR=splitItems.reduce((s,e)=>s+e.refund,0);const totN=splitItems.reduce((s,e)=>s+e.net,0);const pp=Math.round(totN/ppl);
-  document.getElementById('sp-to').textContent='¥'+totO.toLocaleString();document.getElementById('sp-tr').textContent='¥'+totR.toLocaleString();document.getElementById('sp-tp').textContent='¥'+pp.toLocaleString();document.getElementById('sp-tw').textContent=`≈ 每人 NT$${Math.round(pp/RATES['JPY']).toLocaleString()}（參考匯率）`;
+  const cuSym=cu;const twdTot=RATES[cuSym]?Math.round(pp/RATES[cuSym]*RATES['TWD']):pp;
+  document.getElementById('sp-to').textContent=cuSym+' '+totO.toLocaleString();
+  document.getElementById('sp-tr').textContent=cuSym+' '+totR.toLocaleString();
+  document.getElementById('sp-tp').textContent=cuSym+' '+pp.toLocaleString();
+  document.getElementById('sp-tw').textContent=`≈ 每人 NT$${twdTot.toLocaleString()}（參考匯率）`;
   document.getElementById('split-total').style.display='block';
+}
+function toggleSplitItem(id){
+  const detail=document.getElementById('sid-'+id);const icon=document.getElementById('sic-'+id);
+  if(!detail)return;
+  const open=detail.style.display==='block';detail.style.display=open?'none':'block';if(icon)icon.textContent=open?'▼':'▲';
 }
 
 // ═══════════ SETTINGS ═══════════
@@ -1108,9 +1232,9 @@ function init(){
   document.getElementById('dest-flag').textContent=dc.flag;document.getElementById('dest-name').textContent=dc.name;document.getElementById('dest-tlbl').textContent=dc.flag+' '+dc.name;
   const diff=destTz-homeTz;document.getElementById('tz-diff').textContent=diff>0?`目的地比台灣快 ${diff} 小時`:(diff<0?`目的地比台灣慢 ${Math.abs(diff)} 小時`:'目的地與台灣時間相同');
   // Build views
-  buildTripList();renderExp();updateBudget();updateTopBar();
+  buildTripList();renderExp();updateBudget();updateTopBar();restoreLastCurrency();
   // Clock
-  setInterval(updateClocks,1000);updateClocks();
+  setInterval(updateClocks,1000);updateClocks();fetchLiveRates();
   // Close emoji on outside click
   document.addEventListener('click',e=>{if(!e.target.closest('.cat-icon-btn')&&!e.target.closest('.emoji-picker'))document.querySelectorAll('.emoji-picker').forEach(ep=>ep.style.display='none');});
 }
