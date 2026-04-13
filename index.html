@@ -432,7 +432,7 @@ async function fetchLiveRates(){
     // Convert to TWD base: rate_TWD_per_X = (1/usdRates[X]) * usdRates['TWD']
     const twdPerUsd=usdRates['TWD'];
     Object.keys(usdRates).forEach(code=>{
-      if(usdRates[code]>0)RATES[code]=twdPerUsd/usdRates[code];
+      if(usdRates[code]>0)RATES[code]=usdRates[code]/twdPerUsd;
     });
     localStorage.setItem('fx_rates',JSON.stringify(usdRates));
     localStorage.setItem('fx_rates_time',String(now));
@@ -444,7 +444,7 @@ async function fetchLiveRates(){
 function applyRates(usdRates){
   const twdPerUsd=usdRates['TWD'];
   if(!twdPerUsd)return;
-  Object.keys(usdRates).forEach(code=>{if(usdRates[code]>0)RATES[code]=twdPerUsd/usdRates[code];});
+  Object.keys(usdRates).forEach(code=>{if(usdRates[code]>0)RATES[code]=usdRates[code]/twdPerUsd;});
 }
 const QUICK_CURRS=['JPY','KRW','USD','EUR','THB','HKD','GBP','SGD','AUD'];
 const EMOJIS=['🚇','✈️','🚌','🚆','🚗','🚕','🛵','🚢','🚁','🛺','🏨','🏩','🏠','🏡','🏕️','⛺','🛖','🏰','🍜','🍣','🍱','🍛','🍔','🍕','🥗','🍩','☕','🍺','🍷','🥘','🍝','🌮','🛍️','🛒','👗','👠','💄','💍','📱','🎁','🧴','👒','🗺️','🏯','⛩️','🗼','🏔️','🌊','🌸','🎡','🏛️','🎭','🎪','🌅','🌃','🎠','📌','⭐','❤️','💫','🔖','🎯','💎','🌟','♨️','🎑','🌺','🏖️','🍦','🎎','🎋','🎍'];
